@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter, Playfair_Display } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { CartProvider } from "@/contexts/CartContext"
 import "./globals.css"
 
 const inter = Inter({
@@ -20,20 +21,10 @@ export const metadata: Metadata = {
   generator: "v0.app",
   icons: {
     icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
+      { url: "/placeholder-logo.png", sizes: "32x32", type: "image/png" },
+      { url: "/placeholder-logo.png", sizes: "64x64", type: "image/png" },
     ],
-    apple: "/apple-icon.png",
+    apple: { url: "/placeholder-logo.png", sizes: "180x180", type: "image/png" },
   },
 }
 
@@ -45,7 +36,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} ${playfair.variable} font-sans antialiased`}>
-        {children}
+        <CartProvider>
+          {children}
+        </CartProvider>
         <Analytics />
       </body>
     </html>

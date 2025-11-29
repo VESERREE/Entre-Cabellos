@@ -5,7 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { Button } from "../ui/button"
 import { Label } from "../ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Calendar, Clock, User, CreditCard } from "lucide-react"
+import { Calendar } from "../ui/calendar"
+import { Calendar as CalendarIcon, Clock, User, CreditCard, Check } from "lucide-react"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
 
 const services = [
   { id: "corte", name: "Corte Clásico", price: 12000 },
@@ -27,21 +30,38 @@ export function Booking() {
   const [step, setStep] = useState(1)
   const [selectedService, setSelectedService] = useState("")
   const [selectedBarber, setSelectedBarber] = useState("")
-  const [selectedDate, setSelectedDate] = useState("")
+  const [selectedDate, setSelectedDate] = useState<Date>()
   const [selectedTime, setSelectedTime] = useState("")
+  const [customerName, setCustomerName] = useState("")
+  const [customerEmail, setCustomerEmail] = useState("")
+  const [customerPhone, setCustomerPhone] = useState("")
 
   const selectedServiceData = services.find((s) => s.id === selectedService)
+  const selectedBarberData = barbers.find((b) => b.id === selectedBarber)
 
-  const handleBooking = () => {
-    setStep(2)
+  const handleNextStep = () => {
+    setStep(step + 1)
+  }
+
+  const handlePreviousStep = () => {
+    setStep(step - 1)
   }
 
   const resetBooking = () => {
     setStep(1)
     setSelectedService("")
     setSelectedBarber("")
-    setSelectedDate("")
+    setSelectedDate(undefined)
     setSelectedTime("")
+    setCustomerName("")
+    setCustomerEmail("")
+    setCustomerPhone("")
+  }
+
+  const handleConfirmBooking = () => {
+    // Aquí podrías integrar con tu backend
+    alert("¡Reserva confirmada! Te enviaremos un email de confirmación.")
+    resetBooking()
   }
 
   return (
@@ -51,22 +71,53 @@ export function Booking() {
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">Reserva tu Cita</h2>
           <p className="text-lg text-muted-foreground text-balance">
-            Agenda tu próxima visita de forma rápida y segura
+            Agenda tu próxima visita en 3 simples pasos
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto">
-          {step === 1 ? (
+        {/* Progress Indicator */}
+        <div className="max-w-3xl mx-auto mb-8">
+          <div className="flex justify-between items-center">
+            {[1, 2, 3].map((stepNumber) => (
+              <div key={stepNumber} className="flex items-center flex-1">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                    step >= stepNumber
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {step > stepNumber ? <Check size={20} /> : stepNumber}
+                </div>
+                {stepNumber < 3 && (
+                  <div
+                    className={`flex-1 h-1 mx-2 ${
+                      step > stepNumber ? "bg-primary" : "bg-muted"
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between mt-2">
+            <span className="text-xs text-muted-foreground">Servicio</span>
+            <span className="text-xs text-muted-foreground">Fecha y Hora</span>
+            <span className="text-xs text-muted-foreground">Confirmar</span>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          {/* STEP 1: Service and Barber Selection */}
+          {step === 1 && (
             <Card className="bg-card border-2 border-border">
               <CardHeader>
-                <CardTitle className="text-2xl text-foreground">Selecciona tu servicio</CardTitle>
-                <CardDescription className="text-muted-foreground">Completa los datos para tu reserva</CardDescription>
+                <CardTitle className="text-2xl text-foreground">Selecciona tu servicio y barbero</CardTitle>
+                <CardDescription className="text-muted-foreground">Paso 1 de 3</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Service Selection */}
                 <div className="space-y-2">
-                  <Label htmlFor="service" className="text-foreground">
-                    <User size={16} className="inline mr-2 text-primary" />
+                  <Label htmlFor="service" className="text-foreground font-semibold">
                     Servicio
                   </Label>
                   <Select value={selectedService} onValueChange={setSelectedService}>
@@ -85,8 +136,7 @@ export function Booking() {
 
                 {/* Barber Selection */}
                 <div className="space-y-2">
-                  <Label htmlFor="barber" className="text-foreground">
-                    <User size={16} className="inline mr-2 text-primary" />
+                  <Label htmlFor="barber" className="text-foreground font-semibold">
                     Barbero
                   </Label>
                   <Select value={selectedBarber} onValueChange={setSelectedBarber}>
@@ -103,67 +153,104 @@ export function Booking() {
                   </Select>
                 </div>
 
-                {/* Date Selection */}
-                <div className="space-y-2">
-                  <Label htmlFor="date" className="text-foreground">
-                    <Calendar size={16} className="inline mr-2 text-primary" />
-                    Fecha
-                  </Label>
-                  <input
-                    id="date"
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-                  />
-                </div>
-
-                {/* Time Selection */}
-                <div className="space-y-2">
-                  <Label htmlFor="time" className="text-foreground">
-                    <Clock size={16} className="inline mr-2 text-primary" />
-                    Hora
-                  </Label>
-                  <Select value={selectedTime} onValueChange={setSelectedTime}>
-                    <SelectTrigger id="time" className="bg-background">
-                      <SelectValue placeholder="Selecciona una hora" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Availability Notice */}
-                {selectedDate && selectedTime && (
-                  <div className="p-4 bg-primary/10 border border-primary rounded-lg">
-                    <p className="text-sm text-foreground">
-                      <span className="font-semibold text-primary">✓ Disponible</span> El horario seleccionado está
-                      disponible
-                    </p>
-                  </div>
-                )}
-
-                {/* Submit Button */}
+                {/* Next Button */}
                 <Button
                   size="lg"
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={!selectedService || !selectedBarber || !selectedDate || !selectedTime}
-                  onClick={handleBooking}
+                  disabled={!selectedService || !selectedBarber}
+                  onClick={handleNextStep}
                 >
-                  Continuar al Pago
+                  Continuar a Fecha y Hora
                 </Button>
               </CardContent>
             </Card>
-          ) : (
+          )}
+
+          {/* STEP 2: Date and Time Selection with Calendar */}
+          {step === 2 && (
+            <Card className="bg-card border-2 border-border">
+              <CardHeader>
+                <CardTitle className="text-2xl text-foreground">Selecciona fecha y hora</CardTitle>
+                <CardDescription className="text-muted-foreground">Paso 2 de 3</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Calendar */}
+                <div className="space-y-2">
+                  <Label className="text-foreground font-semibold flex items-center">
+                    <CalendarIcon size={16} className="mr-2 text-primary" />
+                    Fecha
+                  </Label>
+                  <div className="flex justify-center">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
+                      locale={es}
+                      className="rounded-md border"
+                    />
+                  </div>
+                  {selectedDate && (
+                    <p className="text-center text-sm text-muted-foreground">
+                      Fecha seleccionada: {format(selectedDate, "PPPP", { locale: es })}
+                    </p>
+                  )}
+                </div>
+
+                {/* Time Slots */}
+                {selectedDate && (
+                  <div className="space-y-2">
+                    <Label className="text-foreground font-semibold flex items-center">
+                      <Clock size={16} className="mr-2 text-primary" />
+                      Hora disponible
+                    </Label>
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                      {timeSlots.map((time) => (
+                        <Button
+                          key={time}
+                          variant={selectedTime === time ? "default" : "outline"}
+                          className={`${
+                            selectedTime === time
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-primary/10"
+                          }`}
+                          onClick={() => setSelectedTime(time)}
+                        >
+                          {time}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation Buttons */}
+                <div className="flex gap-4">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="flex-1"
+                    onClick={handlePreviousStep}
+                  >
+                    Volver
+                  </Button>
+                  <Button
+                    size="lg"
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                    disabled={!selectedDate || !selectedTime}
+                    onClick={handleNextStep}
+                  >
+                    Continuar a Confirmación
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* STEP 3: Confirmation and Customer Info */}
+          {step === 3 && (
             <div className="grid md:grid-cols-2 gap-6">
               {/* Booking Summary */}
-              <Card className="bg-card border-2 border-border">
+              <Card className="bg-card border-2 border-border h-fit">
                 <CardHeader>
                   <CardTitle className="text-xl text-foreground">Resumen de Reserva</CardTitle>
                 </CardHeader>
@@ -175,13 +262,13 @@ export function Booking() {
                   <div className="flex justify-between py-2 border-b border-border">
                     <span className="text-muted-foreground">Barbero:</span>
                     <span className="font-semibold text-foreground">
-                      {barbers.find((b) => b.id === selectedBarber)?.name}
+                      {selectedBarberData?.name}
                     </span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-border">
                     <span className="text-muted-foreground">Fecha:</span>
                     <span className="font-semibold text-foreground">
-                      {new Date(selectedDate).toLocaleDateString("es-CL")}
+                      {selectedDate ? format(selectedDate, "PP", { locale: es }) : ""}
                     </span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-border">
@@ -197,76 +284,82 @@ export function Booking() {
                 </CardContent>
               </Card>
 
-              {/* Payment Module */}
+              {/* Customer Information */}
               <Card className="bg-card border-2 border-primary">
                 <CardHeader>
                   <CardTitle className="text-xl text-foreground flex items-center">
-                    <CreditCard size={20} className="mr-2 text-primary" />
-                    Información de Pago
+                    <User size={20} className="mr-2 text-primary" />
+                    Tus Datos
                   </CardTitle>
-                  <CardDescription className="text-muted-foreground">Simulación de WebPay / Stripe</CardDescription>
+                  <CardDescription className="text-muted-foreground">
+                    Completa tus datos para confirmar la reserva
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="card-number" className="text-foreground">
-                      Número de Tarjeta
+                    <Label htmlFor="customer-name" className="text-foreground">
+                      Nombre Completo *
                     </Label>
                     <input
-                      id="card-number"
+                      id="customer-name"
                       type="text"
-                      placeholder="1234 5678 9012 3456"
+                      placeholder="Juan Pérez"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
                     />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="expiry" className="text-foreground">
-                        Vencimiento
-                      </Label>
-                      <input
-                        id="expiry"
-                        type="text"
-                        placeholder="MM/AA"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="cvv" className="text-foreground">
-                        CVV
-                      </Label>
-                      <input
-                        id="cvv"
-                        type="text"
-                        placeholder="123"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-                      />
-                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-foreground">
-                      Nombre del Titular
+                    <Label htmlFor="customer-email" className="text-foreground">
+                      Email *
                     </Label>
                     <input
-                      id="name"
-                      type="text"
-                      placeholder="Juan Pérez"
+                      id="customer-email"
+                      type="email"
+                      placeholder="juan@ejemplo.com"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
                     />
                   </div>
 
-                  <Button size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                    Pagar ${selectedServiceData?.price.toLocaleString()}
-                  </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="customer-phone" className="text-foreground">
+                      Teléfono *
+                    </Label>
+                    <input
+                      id="customer-phone"
+                      type="tel"
+                      placeholder="+56 9 1234 5678"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                    />
+                  </div>
 
-                  <Button
-                    variant="outline"
-                    className="w-full border-border text-muted-foreground hover:text-foreground bg-transparent"
-                    onClick={resetBooking}
-                  >
-                    Cancelar y volver
-                  </Button>
+                  <div className="flex gap-4">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="flex-1"
+                      onClick={handlePreviousStep}
+                    >
+                      Volver
+                    </Button>
+                    <Button
+                      size="lg"
+                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={!customerName || !customerEmail || !customerPhone}
+                      onClick={handleConfirmBooking}
+                    >
+                      Confirmar Reserva
+                    </Button>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground text-center">
+                    Te enviaremos una confirmación por email
+                  </p>
                 </CardContent>
               </Card>
             </div>

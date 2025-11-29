@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { CartSheet } from "@/components/CartSheet"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -12,7 +13,6 @@ export function Header() {
     { href: "/", label: "Inicio" },
     { href: "#servicios", label: "Servicios" },
     { href: "#productos", label: "Productos" },
-    { href: "#reserva", label: "Reserva" },
     { href: "#contacto", label: "Contacto" },
   ]
 
@@ -36,7 +36,10 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Reservar Ahora</Button>
+            <CartSheet />
+            <Link href="#reserva">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Reservar Ahora</Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -62,7 +65,12 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 w-full">Reservar Ahora</Button>
+              <div className="flex flex-col gap-2">
+                <CartSheet />
+                <Link href="#reserva" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 w-full">Reservar Ahora</Button>
+                </Link>
+              </div>
             </div>
           </div>
         )}

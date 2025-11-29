@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { useCart } from "@/contexts/CartContext"
 
 interface Product {
   id: number
@@ -74,32 +74,17 @@ const products: Product[] = [
 ]
 
 export function Products() {
-  const [cart, setCart] = useState<number[]>([])
-
-  const addToCart = (productId: number) => {
-    setCart([...cart, productId])
-  }
+  const { addToCart } = useCart()
 
   return (
     <section id="productos" className="py-20 lg:py-32 bg-background">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16">
-          <div className="max-w-2xl mb-6 md:mb-0">
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">Productos Premium</h2>
-            <p className="text-lg text-muted-foreground text-balance">
-              Cuida tu estilo en casa con productos profesionales seleccionados
-            </p>
-          </div>
-
-          {/* Cart Button */}
-          <Button
-            variant="outline"
-            className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
-          >
-            <ShoppingCart size={20} className="mr-2" />
-            Carrito ({cart.length})
-          </Button>
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <h2 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">Productos Premium</h2>
+          <p className="text-lg text-muted-foreground text-balance">
+            Cuida tu estilo en casa con productos profesionales seleccionados
+          </p>
         </div>
 
         {/* Products Grid */}
